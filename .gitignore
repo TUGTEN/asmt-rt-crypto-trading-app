@@ -7,3 +7,11 @@ api/feed
 .tmp-local/
 *.log
 .DS_Store
+
+# Recording pipeline artefacts (regenerable, never committed).
+# Commit only the scripts: capture.mjs, src/, package.json, package-lock.json,
+# tsconfig.json, remotion.config.ts. See docs/RECORDING.md.
+recording/node_modules/
+recording/footage/
+recording/public/
+recording/out/
