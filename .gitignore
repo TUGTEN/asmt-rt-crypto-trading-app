@@ -1,0 +1,9 @@
+.pi/
+node_modules/
+web/.next/
+web/out/
+api/api
+api/feed
+.tmp-local/
+*.log
+.DS_Store

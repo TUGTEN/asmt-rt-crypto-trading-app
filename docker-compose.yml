@@ -1,0 +1,62 @@
+# docker-compose.yml — the whole demo in one command:
+#
+#   docker compose up --build     → API on :8080, screen on http://localhost:3000
+#
+# This is the local demo path. It is also the deployment story minus the hosts:
+# the same two images would run on a VM or a platform that takes a Dockerfile,
+# and the UI alone is deployed to Vercel (README "Deployment").
+#
+# Honest note on NEXT_PUBLIC_API_URL: the browser calls the API directly, from
+# outside this network, so the URL compiled into the page must be an address the
+# *browser* can reach — here the published host port, not the compose service
+# name `api`. Deployed, set it to the public backend URL when the UI is built.
+name: pitchfork-crypto-trading-app
+
+services:
+  api:
+    build: ./api
+    environment:
+      # The API's config surface (api/.env.example). Host env overrides, e.g.
+      # `SEED=7 docker compose up` for a different deterministic feed.
+      PORT: "8080"
+      SEED: "${SEED:-42}"
+      SYMBOL: "${SYMBOL:-BTC-USD}"
+      # Bands are overridable too, e.g. TIER_FULL_MAX_MS=5 forces downgrades on
+      # a fast local connection (useful to rehearse the tier demo).
+      TIER_FULL_MAX_MS: "${TIER_FULL_MAX_MS:-150}"
+      TIER_DEGRADED_MAX_MS: "${TIER_DEGRADED_MAX_MS:-300}"
+      TIER_MAX_JITTER_MS: "${TIER_MAX_JITTER_MS:-50}"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      # The same check the image ships (api/Dockerfile), spelled out here so the
+      # dependency below reads at a glance.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/api/config || exit 1"]
+      interval: 5s
+      timeout: 2s
+      start_period: 3s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      args:
+        # Inlined into the browser bundle at build time; the address the
+        # browser uses to reach the API on the host.
+        NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-http://localhost:8080}"
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        # The screen is usable without a live market (it says so on screen), so
+        # this is ordering, not a requirement: it just means the first paint of
+        # `docker compose up` lands on a live market rather than a stale one.
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1"]
+      interval: 5s
+      timeout: 2s
+      start_period: 5s
+      retries: 5
+    restart: unless-stopped

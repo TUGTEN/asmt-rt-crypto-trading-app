@@ -1,0 +1,13 @@
+# web/.dockerignore — the image build installs its own dependencies and runs
+# its own `next build`, so nothing generated on the host belongs in the build
+# context. `.env*` is excluded on purpose: the API URL the browser gets is the
+# NEXT_PUBLIC_API_URL build argument (web/Dockerfile), and a local .env.local
+# pointing at a dev backend must not travel into an image.
+node_modules
+.next
+out
+build
+coverage
+*.tsbuildinfo
+.env*
+!.env.example

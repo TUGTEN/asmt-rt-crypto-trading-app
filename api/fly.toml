@@ -1,0 +1,40 @@
+# api/fly.toml — starter for the canonical public API (ADR-0001, issue #14).
+#
+# Manual Fly half (local setup is `scripts/setup-local.sh`; Vercel + deploy-on-push
+# are manual too — see README "Deployment"):
+#   fly auth login
+#   fly launch --name <pick-a-name> --region <near-you>  # keeps this file, fills the name
+#   fly deploy                                            # builds api/Dockerfile
+#   fly open /api/config                                  # expect {"symbol":"BTC-USD",...,"protocol":2}
+#
+# Then the printed https://<name>.fly.dev becomes NEXT_PUBLIC_API_URL on the
+# Vercel project (Root Directory `web`) plus the README deployed-URL lines.
+# Tunnel URLs stay runtime-only in the Backend panel and never land here.
+
+app = "pitchfork-crypto-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  SEED = "42"
+  SYMBOL = "BTC-USD"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  # WebSocket upgrade (`/ws`) rides the same port; Fly terminates TLS and
+  # forwards the upgrade untouched, which is what turns ws:// into wss://.
+  [[http_service.checks]]
+    interval = "10s"
+    timeout = "2s"
+    grace_period = "5s"
+    method = "GET"
+    path = "/api/config"
+    protocol = "http"
