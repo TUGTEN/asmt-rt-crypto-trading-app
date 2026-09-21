@@ -162,8 +162,7 @@ thresholds, rates, and intervals are configuration with documented rationale.
   the spec requires market display only.
 - Watchlist with live prices for non-BTC symbols (bonus built as reorder-only: one live BTC-USD row plus static simulated reference rows; selecting a temp row parks the chart, order persists in `localStorage`).
 - Persistent storage of any kind (no database by design).
-- Backend hosting decision (parked: UI on Vercel, backend TBD) and the screen
-  recording itself (produced after the build).
+- Running the deployed backends beyond the landed setup (UI on Vercel, API on NixOS + Cloudflare tunnel; Fly/Render deferred — see README Deployment). The recording is delivered: `docs/assets/pitchfork-demo.webm` via `docs/RECORDING.md`.
 - Load, soak, and cross-browser testing beyond one modern desktop browser.
 
 ## Further Notes

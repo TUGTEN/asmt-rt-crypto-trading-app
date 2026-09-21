@@ -1,0 +1,25 @@
+{
+  "name": "pitchfork-recording",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Automated silent demo recording: Playwright captures the live screen, Remotion composes title cards over the footage.",
+  "type": "module",
+  "scripts": {
+    "capture": "node capture.mjs",
+    "render": "npx remotion render src/index.ts Demo out/pitchfork-demo.mp4 --crf 12",
+    "web": "ffmpeg -y -i out/pitchfork-demo.mp4 -vf scale=1920:1200:flags=lanczos -c:v libx264 -crf 20 -preset slow -pix_fmt yuv420p -movflags +faststart out/pitchfork-demo-1080p.mp4",
+    "webm:pass1": "ffmpeg -y -i out/pitchfork-demo-1080p.mp4 -c:v libvpx-vp9 -b:v 200k -cpu-used 5 -row-mt 1 -tile-columns 2 -threads 8 -an -pass 1 -passlogfile /tmp/pitchfork-vp9 -f webm /dev/null",
+    "webm:pass2": "ffmpeg -y -i out/pitchfork-demo-1080p.mp4 -c:v libvpx-vp9 -b:v 200k -cpu-used 5 -row-mt 1 -tile-columns 2 -threads 8 -an -pass 2 -passlogfile /tmp/pitchfork-vp9 ../docs/assets/pitchfork-demo.webm",
+    "webm": "npm run webm:pass1 && npm run webm:pass2"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0.400",
+    "@remotion/renderer": "^4.0.400",
+    "remotion": "^4.0.400",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}
